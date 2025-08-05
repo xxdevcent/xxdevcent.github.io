@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email List Processor</title>
+    <style>
+        /* Basic reset and body styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f8f9fa; /* Light gray background */
+            color: #212529; /* Dark text color */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items to the top */
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* Main container for the tool */
+        .container {
+            background-color: #ffffff; /* White background for the card */
+            padding: 30px 40px;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            max-width: 700px; /* Max width */
+            width: 100%; /* Responsive width */
+            box-sizing: border-box; /* Include padding in width calculation */
+            margin-top: 20px; /* Add some margin at the top */
+            margin-bottom: 20px; /* Add margin at the bottom */
+        }
+
+        /* Heading style */
+        h1 {
+            text-align: center;
+            color: #343a40; /* Slightly darker heading */
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* Styling for form groups (label + input) */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        /* Label styling */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500; /* Medium font weight */
+            color: #495057; /* Grayish text for labels */
+        }
+
+        /* Input fields (file, number) and button styling */
+        input[type="file"],
+        input[type="number"],
+        button {
+            width: 100%;
+            padding: 12px 15px; /* Comfortable padding */
+            border: 1px solid #ced4da; /* Standard border */
+            border-radius: 6px; /* Slightly rounded corners */
+            box-sizing: border-box; /* Include padding in width */
+            font-size: 1rem; /* Standard font size */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        /* Add focus style for accessibility */
+        input[type="file"]:focus,
+        input[type="number"]:focus,
+        button:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Specific style for file input */
+        input[type="file"] {
+            cursor: pointer;
+            background-color: #e9ecef; /* Light background for file input */
+        }
+         /* Style the file input button text */
+        input[type="file"]::file-selector-button {
+            padding: 10px 15px;
+            margin: -12px -15px; /* Adjust to fit */
+            margin-right: 15px;
+            background-color: #6c757d; /* Gray button */
+            color: white;
+            border: none;
+            border-radius: 6px 0 0 6px; /* Round left corners */
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        input[type="file"]::file-selector-button:hover {
+             background-color: #5a6268;
+        }
+
+
+        /* Button styling */
+        button {
+            background-color: #007bff; /* Primary blue */
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem; /* Slightly larger button text */
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Button hover effect */
+        button:hover:not(:disabled) { /* Only apply hover when not disabled */
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        /* Disabled button state */
+        button:disabled {
+            background-color: #adb5bd; /* Gray when disabled */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Styling for radio button options */
+        .options label {
+            display: block; /* Each option on its own line */
+            margin-bottom: 10px; /* Space between options */
+            font-weight: normal; /* Normal weight for radio labels */
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid transparent; /* Prepare for border on check */
+            border-radius: 5px;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+         .options label:hover {
+             background-color: #f1f3f5; /* Slight background on hover */
+         }
+
+        .options input[type="radio"] {
+           margin-right: 8px;
+           vertical-align: middle; /* Align radio button with text */
+           accent-color: #007bff; /* Color the radio button itself */
+           cursor: pointer;
+           width: auto; /* Override default width */
+           padding: 0; /* Override default padding */
+        }
+        /* Style the selected radio option's label */
+        .options input[type="radio"]:checked + label {
+            background-color: #e7f1ff; /* Light blue background when checked */
+            border-color: #b8d6ff; /* Blue border when checked */
+            font-weight: 500;
+        }
+
+
+        /* Container for split options, initially hidden */
+        #splitOptions {
+            margin-top: 15px;
+            padding-left: 25px; /* Indent split options */
+            border-left: 3px solid #e9ecef; /* Subtle left border */
+        }
+
+        /* Style for the results area */
+        #results {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6; /* Separator line */
+        }
+
+        /* Heading within results */
+        #results h2 {
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Paragraphs and links within results */
+        #results p,
+        #results a {
+            /* Removed display: block; handled by layout */
+            margin-bottom: 10px;
+            background-color: #e9ecef; /* Light background for info/links */
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: #343a40;
+            text-decoration: none;
+            word-wrap: break-word; /* Prevent long text from overflowing */
+            font-size: 0.95rem;
+        }
+        /* Container for download links */
+        .download-links {
+            margin-top: 15px;
+            display: flex; /* Use flexbox for link layout */
+            flex-wrap: wrap; /* Allow links to wrap on smaller screens */
+            gap: 10px; /* Space between links */
+        }
+
+        /* Specific styling for download links */
+         #results a.download-link { /* Target download links specifically */
+            background-color: #28a745; /* Green for download links */
+            color: white;
+            display: inline-block; /* Make links behave like buttons */
+            transition: background-color 0.2s ease;
+            padding: 8px 15px; /* Adjust padding for links */
+            flex-grow: 0; /* Don't allow links to grow */
+            flex-shrink: 0; /* Don't allow links to shrink */
+            margin-bottom: 0; /* Remove bottom margin as gap handles spacing */
+         }
+         #results a.download-link:hover {
+            background-color: #218838; /* Darker green on hover */
+         }
+         /* Style for the 'bad emails' download link */
+         #results a.download-link.bad-emails {
+             background-color: #ffc107; /* Amber/yellow for warnings/bad emails */
+             color: #212529; /* Dark text for better contrast on yellow */
+         }
+         #results a.download-link.bad-emails:hover {
+             background-color: #e0a800; /* Darker amber on hover */
+         }
+
+
+        /* Class to hide elements */
+        .hidden {
+            display: none;
+        }
+
+        /* Style for error messages */
+        .error {
+            color: #dc3545; /* Red for errors */
+            font-weight: bold;
+            background-color: #f8d7da; /* Light red background */
+            border: 1px solid #f5c6cb; /* Red border */
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+         /* Style for success/info messages */
+        .info {
+            color: #004085; /* Blue for info */
+            background-color: #cce5ff; /* Light blue background */
+            border: 1px solid #b8daff; /* Blue border */
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px; /* Reduce padding on smaller screens */
+            }
+            h1 {
+                font-size: 1.5rem; /* Smaller heading */
+            }
+            input[type="file"],
+            input[type="number"],
+            button {
+                padding: 10px 12px; /* Adjust padding */
+                font-size: 0.95rem;
+            }
+             button {
+                 font-size: 1rem;
+             }
+             #results a.download-link {
+                 padding: 8px 12px;
+                 font-size: 0.9rem;
+             }
+             .download-links {
+                 flex-direction: column; /* Stack links vertically */
+                 align-items: flex-start; /* Align links to the start */
+             }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Email List Processor</h1>
+
+        <div class="form-group">
+            <label for="fileInput">1. Upload Email List (.txt):</label>
+            <input type="file" id="fileInput" accept=".txt" required>
+            <small>File should contain one email per line.</small>
+        </div>
+
+        <div class="form-group options">
+            <label>2. Choose Operation:</label>
+            <div>
+                <input type="radio" id="optionClean" name="operation" value="clean" checked>
+                <label for="optionClean">Remove Bad Emails & Duplicates</label>
+            </div>
+            <div>
+                <input type="radio" id="optionFilter" name="operation" value="filter">
+                <label for="optionFilter">Filter Microsoft Emails (@live, @outlook, @msn, @hotmail)</label>
+            </div>
+            <div>
+                <input type="radio" id="optionSplit" name="operation" value="split">
+                <label for="optionSplit">Split List (Cleans & Splits)</label>
+            </div>
+        </div>
+
+        <div id="splitOptions" class="form-group hidden">
+            <label for="splitSize">Emails per split file:</label>
+            <input type="number" id="splitSize" value="100" min="1" step="1">
+        </div>
+
+        <button id="processButton" disabled>Process Emails</button>
+
+        <div id="results">
+             </div>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const processButton = document.getElementById('processButton');
+        const resultsDiv = document.getElementById('results');
+        const splitOptionsDiv = document.getElementById('splitOptions');
+        const splitSizeInput = document.getElementById('splitSize');
+        const operationRadios = document.querySelectorAll('input[name="operation"]');
+
+        // Store emails read from the file
+        let rawEmails = [];
+
+        // --- Event Listeners ---
+
+        // Listen for file selection
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Listen for button click
+        processButton.addEventListener('click', handleProcess);
+
+        // Listen for changes in operation selection
+        operationRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Show split options only if "Split" is selected
+                if (document.getElementById('optionSplit').checked) {
+                    splitOptionsDiv.classList.remove('hidden');
+                } else {
+                    splitOptionsDiv.classList.add('hidden');
+                }
+                // Clear results when operation changes after a file load
+                if (rawEmails.length > 0) {
+                     resultsDiv.innerHTML = '';
+                }
+            });
+        });
+
+        // --- Core Functions ---
+
+        /**
+         * Handles the file selection event. Reads the file content.
+         * @param {Event} event - The file input change event.
+         */
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            resultsDiv.innerHTML = ''; // Clear previous results
+            processButton.disabled = true; // Disable button until file is read
+            rawEmails = []; // Reset email list
+
+            if (!file) {
+                showError('No file selected.');
+                return;
+            }
+            if (file.type !== 'text/plain') {
+                 showError('Invalid file type. Please upload a .txt file.');
+                 fileInput.value = ''; // Reset file input
+                 return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+                    rawEmails = content.split(/\r?\n/)
+                                       .map(email => email.trim())
+                                       .filter(email => email !== '');
+                    if (rawEmails.length === 0) {
+                         showInfo('File loaded, but it appears to be empty or contains only whitespace.');
+                         processButton.disabled = true;
+                    } else {
+                         showInfo(`File loaded successfully. Found ${rawEmails.length} email entries.`);
+                         processButton.disabled = false;
+                    }
+                } catch (error) {
+                     showError(`Error reading file content: ${error.message}`);
+                     rawEmails = [];
+                     processButton.disabled = true;
+                }
+            };
+            reader.onerror = (e) => {
+                showError('Error reading the file.');
+                rawEmails = [];
+                processButton.disabled = true;
+            };
+            reader.readAsText(file);
+        }
+
+        /**
+         * Checks if a string is a reasonably valid email address format based on common patterns.
+         * NOTE: True RFC 5322 validation is extremely complex. This regex covers most common valid cases
+         * and rejects many obviously invalid ones. It allows for international characters.
+         * @param {string} email - The email string to validate.
+         * @returns {boolean} - True if the email format appears valid, false otherwise.
+         */
+        function isValidEmail(email) {
+            if (!email) return false; // Handle empty strings explicitly
+
+            // Regex Breakdown:
+            // ^                                   # Start of string
+            // [a-zA-Z0-9._%+-]+                   # Local part: letters, numbers, ., _, %, +, - (one or more)
+            // @                                   # The "@" symbol
+            // [a-zA-Z0-9.-]+                      # Domain name part: letters, numbers, ., - (one or more)
+            // \.                                  # A literal dot separating domain from TLD
+            // [a-zA-Z]{2,}                        # Top-level domain (TLD): letters only, at least 2 characters
+            // $                                   # End of string
+            // Using a simpler, more common regex that balances strictness and usability.
+            // A stricter version (closer to RFC 5322) could be:
+            // const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+            // However, the simpler one below is often sufficient and less prone to rejecting valid edge cases.
+             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            // Additional check: Ensure domain part does not start or end with a hyphen or dot
+            const parts = email.split('@');
+            if (parts.length !== 2) return false; // Must have exactly one '@'
+            const domain = parts[1];
+            if (domain.startsWith('.') || domain.endsWith('.') || domain.startsWith('-') || domain.endsWith('-')) {
+                return false;
+            }
+            // Ensure no consecutive dots in domain
+             if (domain.includes('..')) {
+                 return false;
+             }
+
+            return emailRegex.test(email);
+        }
+
+
+        /**
+         * Cleans an array of emails: separates valid/invalid, removes duplicates from valid list.
+         * @param {string[]} emails - The array of raw email strings.
+         * @returns {{validEmails: string[], invalidEmails: string[]}} - An object containing unique valid emails (lowercase) and all invalid entries.
+         */
+        function cleanAndSeparateEmails(emails) {
+            const validEmailsSet = new Set(); // Use Set for efficient unique valid email storage (lowercase)
+            const invalidEmails = [];
+
+            emails.forEach(email => {
+                if (isValidEmail(email)) {
+                    validEmailsSet.add(email.toLowerCase()); // Add valid emails (lowercase) to Set
+                } else {
+                    invalidEmails.push(email); // Add invalid emails to array
+                }
+            });
+
+            // Convert the Set of valid emails back to an array
+            const uniqueValidEmails = [...validEmailsSet];
+
+            return {
+                validEmails: uniqueValidEmails,
+                invalidEmails: invalidEmails
+            };
+        }
+
+
+        /**
+         * Filters a list of emails to keep only Microsoft domains, after cleaning and separating.
+         * @param {string[]} emails - The array of raw email strings.
+         * @returns {{filteredEmails: string[], invalidEmails: string[]}} - Object with unique valid Microsoft emails (lowercase) and all invalid entries.
+         */
+        function filterMicrosoftEmails(emails) {
+            const microsoftDomains = ['@hotmail.', '@outlook.', '@live.', '@msn.'];
+            // Clean and separate first
+            const { validEmails, invalidEmails } = cleanAndSeparateEmails(emails);
+
+            // Filter the valid list for Microsoft domains
+            const filteredMicrosoftEmails = validEmails.filter(email => {
+                const lowerEmail = email.toLowerCase(); // Already lowercase, but safe practice
+                const atIndex = lowerEmail.lastIndexOf('@');
+                if (atIndex === -1) return false;
+                const domainPart = lowerEmail.substring(atIndex);
+                return microsoftDomains.some(domain => domainPart.startsWith(domain));
+            });
+
+            return {
+                filteredEmails: filteredMicrosoftEmails,
+                invalidEmails: invalidEmails // Pass through the invalid emails
+            };
+        }
+
+        /**
+         * Handles the click event of the process button. Performs the selected operation.
+         */
+        function handleProcess() {
+            if (rawEmails.length === 0 && fileInput.files.length > 0) {
+                showError('The loaded file seems empty or invalid. Please check the file content.');
+                return;
+            } else if (rawEmails.length === 0) {
+                 showError('Please upload an email list file first.');
+                 return;
+            }
+
+            resultsDiv.innerHTML = '<h2>Processing...</h2>';
+            processButton.disabled = true;
+
+            setTimeout(() => {
+                try {
+                    const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
+                    let finalValidEmails = [];
+                    let invalidEmailsFound = [];
+                    let resultTitle = '';
+                    let downloadFilenameBase = 'processed_emails';
+                    const originalCount = rawEmails.length;
+
+                    // --- Perform selected operation ---
+
+                    if (selectedOperation === 'clean') {
+                        const { validEmails, invalidEmails } = cleanAndSeparateEmails(rawEmails);
+                        finalValidEmails = validEmails;
+                        invalidEmailsFound = invalidEmails;
+                        resultTitle = `Cleaned List Results`;
+                        downloadFilenameBase = 'cleaned_emails';
+                        displayResults(resultTitle, finalValidEmails, invalidEmailsFound, originalCount);
+                        generateDownloadLink(finalValidEmails, `${downloadFilenameBase}.txt`, 'Valid Emails');
+
+                    } else if (selectedOperation === 'filter') {
+                        const { filteredEmails, invalidEmails } = filterMicrosoftEmails(rawEmails);
+                        finalValidEmails = filteredEmails;
+                        invalidEmailsFound = invalidEmails;
+                        resultTitle = `Filtered Microsoft List Results`;
+                        downloadFilenameBase = 'microsoft_emails';
+                        displayResults(resultTitle, finalValidEmails, invalidEmailsFound, originalCount);
+                        generateDownloadLink(finalValidEmails, `${downloadFilenameBase}.txt`, 'Filtered Emails');
+
+                    } else if (selectedOperation === 'split') {
+                        const chunkSize = parseInt(splitSizeInput.value, 10);
+                        if (isNaN(chunkSize) || chunkSize <= 0) {
+                            showError('Please enter a valid positive number for the split size.');
+                            processButton.disabled = false;
+                            return;
+                        }
+
+                        const { validEmails, invalidEmails } = cleanAndSeparateEmails(rawEmails); // Clean first
+                        finalValidEmails = validEmails; // Keep track of all valid emails for summary
+                        invalidEmailsFound = invalidEmails;
+                        resultTitle = `Split List Results`;
+                        downloadFilenameBase = 'split_emails';
+
+                        displayResults(resultTitle, finalValidEmails, invalidEmailsFound, originalCount, chunkSize);
+
+                        if (finalValidEmails.length > 0) {
+                             splitAndGenerateLinks(finalValidEmails, chunkSize, downloadFilenameBase);
+                        } else {
+                             // displayResults already shows info if finalValidEmails is empty
+                        }
+                    }
+
+                    // Always generate bad email link if any were found
+                    if (invalidEmailsFound.length > 0) {
+                        generateDownloadLink(invalidEmailsFound, 'invalid_emails.txt', 'Invalid Entries', true);
+                    }
+
+                } catch (error) {
+                     showError(`An error occurred during processing: ${error.message}`);
+                     console.error("Processing Error:", error);
+                } finally {
+                    if (processButton.disabled) {
+                         processButton.disabled = false;
+                    }
+                }
+            }, 10);
+        }
+
+        /**
+         * Displays the summary results in the results div.
+         * @param {string} title - The main title for the results section.
+         * @param {string[]} validEmails - Array of processed valid emails.
+         * @param {string[]} invalidEmails - Array of emails deemed invalid.
+         * @param {number} originalCount - The total number of emails initially read.
+         * @param {number|null} [chunkSize=null] - The chunk size used for splitting (if applicable).
+         */
+        function displayResults(title, validEmails, invalidEmails, originalCount, chunkSize = null) {
+            resultsDiv.innerHTML = `<h2>${title}</h2>`;
+            resultsDiv.innerHTML += `<p class="info">Processed ${originalCount} entries.</p>`;
+            resultsDiv.innerHTML += `<p class="info">Found ${validEmails.length} unique valid emails.</p>`;
+            resultsDiv.innerHTML += `<p class="info">Found ${invalidEmails.length} invalid entries.</p>`;
+
+            if (chunkSize !== null) {
+                if (validEmails.length > 0) {
+                    const numChunks = Math.ceil(validEmails.length / chunkSize);
+                    resultsDiv.innerHTML += `<p class="info">Splitting valid emails into ${numChunks} file(s) of up to ${chunkSize} emails each.</p>`;
+                } else {
+                     resultsDiv.innerHTML += `<p class="info">No valid emails to split.</p>`;
+                }
+            }
+            // Add a container for download links
+             resultsDiv.innerHTML += `<div class="download-links"></div>`;
+        }
+
+
+        /**
+         * Generates a downloadable text file link.
+         * @param {string[]} dataArray - Array of strings (emails) to include in the file.
+         * @param {string} filename - The desired name for the downloaded file.
+         * @param {string} linkTextPrefix - The prefix for the link text (e.g., 'Valid Emails', 'Invalid Entries').
+         * @param {boolean} [isBadList=false] - Flag to style the link differently for invalid emails.
+         */
+        function generateDownloadLink(dataArray, filename, linkTextPrefix, isBadList = false) {
+            const downloadLinksContainer = resultsDiv.querySelector('.download-links');
+            if (!downloadLinksContainer) {
+                console.error("Download links container not found!");
+                return; // Should not happen if displayResults was called
+            }
+
+            if (dataArray.length === 0 && !isBadList) { // Don't show link for empty valid lists
+                 // We already show counts in displayResults, so no extra message needed here.
+                 return;
+            }
+             if (dataArray.length === 0 && isBadList) {
+                 // This case should technically not happen if called correctly,
+                 // as we only call this for bad emails if invalidEmailsFound.length > 0.
+                 // But as a safeguard:
+                 return;
+             }
+
+
+            const content = dataArray.join('\n');
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.classList.add('download-link'); // Add class for styling
+             if (isBadList) {
+                 link.classList.add('bad-emails'); // Add specific class for bad emails
+             }
+            link.href = url;
+            link.download = filename;
+            link.textContent = `Download ${linkTextPrefix} (${dataArray.length})`; // Include count in link text
+
+            downloadLinksContainer.appendChild(link);
+
+            // Optional: Revoke URL later
+            // link.addEventListener('click', () => setTimeout(() => URL.revokeObjectURL(url), 100));
+        }
+
+         /**
+          * Splits an array into chunks and generates download links for each chunk.
+          * @param {string[]} emails - The array of valid emails to split.
+          * @param {number} chunkSize - The maximum number of emails per chunk.
+          * @param {string} filenameBase - The base name for the download files.
+          */
+         function splitAndGenerateLinks(emails, chunkSize, filenameBase) {
+             const downloadLinksContainer = resultsDiv.querySelector('.download-links');
+              if (!downloadLinksContainer) {
+                 console.error("Download links container not found for splitting!");
+                 return;
+              }
+
+             let chunkIndex = 1;
+             if (emails.length === 0) return;
+
+             for (let i = 0; i < emails.length; i += chunkSize) {
+                 const chunk = emails.slice(i, i + chunkSize);
+                 const filename = `${filenameBase}_part_${chunkIndex}_(${chunk.length}_emails).txt`;
+                 const content = chunk.join('\n');
+                 const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                 const url = URL.createObjectURL(blob);
+
+                 const link = document.createElement('a');
+                 link.classList.add('download-link'); // Add class for styling
+                 link.href = url;
+                 link.download = filename;
+                 link.textContent = `Download Part ${chunkIndex} (${chunk.length})`;
+
+                 downloadLinksContainer.appendChild(link);
+                 chunkIndex++;
+                 // Optional: Revoke URL later
+                 // link.addEventListener('click', () => setTimeout(() => URL.revokeObjectURL(url), 100));
+             }
+         }
+
+        // --- Utility Functions for User Feedback ---
+
+        function showError(message) {
+            resultsDiv.innerHTML = `<p class="error">${message}</p>`;
+        }
+        function showInfo(message) {
+             // Prepend info message if results div already has content, otherwise replace
+             if (resultsDiv.innerHTML.trim() !== '') {
+                 resultsDiv.insertAdjacentHTML('afterbegin', `<p class="info">${message}</p>`);
+             } else {
+                 resultsDiv.innerHTML = `<p class="info">${message}</p>`;
+             }
+        }
+
+    </script>
+</body>
+</html>
